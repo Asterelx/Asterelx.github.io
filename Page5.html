@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Matching Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .game-container {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      gap: 10px;
+    }
+
+    .card {
+      width: 100px;
+      height: 140px;
+      perspective: 1000px;
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      cursor: pointer;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      backface-visibility: hidden;
+      border-radius: 8px;
+    }
+
+    .card-front {
+      background-color: #ED7793;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+    }
+
+    .card-back {
+      background-color: #ffffff;
+      transform: rotateY(180deg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      border: 2px solid #ED7793;
+      font-size: 70px;
+    }
+
+    .info-page {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      font-size: 1.3rem;
+    }
+
+    .info-page.active {
+      display: flex;
+    }
+
+    .info-page h2 {
+      margin-bottom: 10px;
+      font-size: 1.5rem;
+    }
+
+    .info-page button {
+      padding: 10px 20px;
+      font-family: 'Pixelify Sans', serif;
+      background-color: #ED7793;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .info-page button:hover {
+      background-color: #E96C86;
+    }
+  </style>
+</head>
+<body>
+  <h1>What are some real-life exmaples of AI? </br> Pair Up The Cards!</h1>
+  <div class="game-container"></div>
+
+  <div class="info-page" id="infoPage">
+    <h2 id="infoTitle"></h2>
+    <p id="infoDescription"></p>
+    <button onclick="goBackToGame()">Back to Game</button>
+  </div>
+
+  <button class="next-button" id="nextButton" onclick="goToNextPage()">Next</button>
+
+  <script>
+    const cardsData = [
+      { id: 1, title: "AI in Email Spam Filter", description: "The AI model in spam filters learns to identify and filter spam emails using labeled data.", logo: "\uD83D\uDCE7" },
+      { id: 2, title: "AI in Online Retail", description: "The AI model is trained to analyse customers’ behaviour, preferences and buying patterns. </br> They can then recommend products and predict customers’ shopping trends.", logo: "\uD83D\uDC55" },
+      { id: 3, title: "AI in Recommendations", description: "AI powers product and media recommendations on platforms like Netflix and Amazon.", logo: "\uD83C\uDFAC" },
+      { id: 4, title: "AI in Navigation", description: "Google Maps uses AI to predict traffic and optimize routes.", logo: "\uD83D\uDE95" }
+    ];
+
+    let cards = [...cardsData, ...cardsData];
+    let flippedCards = [];
+    let matchedCards = [];
+
+    const gameContainer = document.querySelector('.game-container');
+    const infoPage = document.getElementById('infoPage');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoDescription = document.getElementById('infoDescription');
+    const nextButton = document.getElementById('nextButton');
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function createCard(cardData) {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.dataset.id = cardData.id;
+
+      const cardInner = document.createElement('div');
+      cardInner.classList.add('card-inner');
+
+      const cardFront = document.createElement('div');
+      cardFront.classList.add('card-front');
+      cardFront.textContent = "AI";
+
+      const cardBack = document.createElement('div');
+      cardBack.classList.add('card-back');
+      cardBack.textContent = cardData.logo;
+
+      cardInner.appendChild(cardFront);
+      cardInner.appendChild(cardBack);
+      card.appendChild(cardInner);
+
+      card.addEventListener('click', () => flipCard(card, cardData));
+
+      return card;
+    }
+
+    function flipCard(card, cardData) {
+      if (flippedCards.length < 2 && !card.classList.contains('flipped') && !matchedCards.includes(card)) {
+        card.classList.add('flipped');
+        flippedCards.push({ card, cardData });
+
+        if (flippedCards.length === 2) {
+          checkForMatch();
+        }
+      }
+    }
+
+    function checkForMatch() {
+      const [first, second] = flippedCards;
+
+      if (first.cardData.id === second.cardData.id) {
+        matchedCards.push(first.card, second.card);
+        setTimeout(() => showInfoPage(first.cardData), 600);
+
+        if (matchedCards.length === cards.length) {
+          setTimeout(() => {
+            nextButton.style.display = 'block';
+          }, 1000);
+        }
+      } else {
+        setTimeout(() => {
+          first.card.classList.remove('flipped');
+          second.card.classList.remove('flipped');
+        }, 1000);
+      }
+
+      flippedCards = [];
+    }
+
+    function showInfoPage(cardData) {
+      infoTitle.textContent = cardData.title;
+      infoDescription.innerHTML = cardData.description;
+      infoPage.classList.add('active');
+      gameContainer.style.display = 'none';
+    }
+
+    function goBackToGame() {
+      infoPage.classList.remove('active');
+      gameContainer.style.display = 'grid';
+    }
+
+    function goToNextPage() {
+      window.location.href = 'Page6.html'; // Replace 'next-page.html' with the URL or path to your next page
+    }
+      // Replace this with actual navigation logic
+
+    function initializeGame() {
+      shuffle(cards).forEach(cardData => {
+        const card = createCard(cardData);
+        gameContainer.appendChild(card);
+      });
+    }
+
+    initializeGame();
+  </script>
+</body>
+</html>

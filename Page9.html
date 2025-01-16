@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Prompt Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+    <style>
+        /* General reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Pixelify Sans', serif; /* Retro font */
+            background-color: #FFBCBC; /* Light pink background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Container for the entire content */
+        .container {
+            width: 960px; /* Fixed width */
+            height: 540px; /* Fixed height */
+            display: flex;
+            flex-direction: column; /* Stack header and main content */
+            justify-content: flex-start; /* Align header at the top */
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box; /* Include padding in the container dimensions */
+        }
+
+        /* Header styling */
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 200;
+            color: #000;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Main content area */
+        .main-content {
+            width: 100%;
+            height: calc(100% - 60px); /* Subtract header height and margin from container */
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        /* Left section for the prompt */
+        .text-container {
+            width: 48%; /* Slightly reduced width */
+            height: 80%; /* Adjusted to fit within the container */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            text-align: left;
+            padding: 20px;
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .text-container p {
+            font-size: 1.3rem;
+            color: #000;
+            margin-bottom: 30px;
+        }
+
+        .highlight-persona { background-color: #6C8AFF; }
+        .highlight-task { background-color: #74D174; }
+        .highlight-audience { background-color: #FF6CAB; }
+        .highlight-context { background-color: #C687FF; }
+        .highlight-format { background-color: #FFD85C; }
+
+        /* Right section for the buttons */
+        .button-container {
+            width: 37%; /* Slightly increased width */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Button styles */
+        .button {
+            background-color: #ED7793;
+            color: #ffffff;
+            font-family: 'Pixelify Sans', serif;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 30px;
+            cursor: pointer;
+            margin: 10px 0;
+            text-decoration: none;
+            text-transform: uppercase;
+            width: 70%; /* Button width */
+            transition: background-color 0.3s;
+        }
+
+        .button:disabled {
+            background-color: #C4C4C4;
+            cursor: not-allowed;
+        }
+
+        /* Specific button colors */
+        .button-persona { background-color: #6C8AFF; }
+        .button-task { background-color: #74D174; }
+        .button-audience { background-color: #FF6CAB; }
+        .button-context { background-color: #C687FF; }
+        .button-format { background-color: #FFD85C; }
+
+        .button-persona:hover { background-color: #5A74D1; }
+        .button-task:hover { background-color: #5EA75E; }
+        .button-audience:hover { background-color: #D95589; }
+        .button-context:hover { background-color: #A669D6; }
+        .button-format:hover { background-color: #E3B84F; }
+
+        /* "Next" button styles */
+        .next-button {
+            background-color: #ED7793; 
+            color: #ffffff; /* Black text */
+            font-family: 'Pixelify Sans', serif;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: background-color 0.3s;
+        }
+
+        .next-button:hover {
+            background-color: #E96C86; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Improve this prompt!</h1>
+        <div class="main-content">
+            <div class="text-container">
+                <p id="prompt">Help me plan a birthday party.</p>
+            </div>
+            <div class="button-container" id="button-container">
+                <button class="button button-persona" onclick="addText('persona', 'Act as a birthday planner.', 'highlight-persona', this)">Persona</button>
+                <button class="button button-task" onclick="addText('task', 'I need help planning a birthday party for my best friend, Callieco.', 'highlight-task', this)">Task</button>
+                <button class="button button-audience" onclick="addText('audience', 'Plan out a party theme, fun activities, a seafood menu, and decoration ideas.', 'highlight-audience', this)">Audience</button>
+                <button class="button button-context" onclick="addText('context', 'She loves to play, her favourite colour is rainbow, and she loves seafood.', 'highlight-context', this)">Context</button>
+                <button class="button button-format" onclick="addText('format', 'Write them out in bullet points.', 'highlight-format', this)">Format</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let clickedCount = 0;
+
+        function addText(type, text, highlightClass, button) {
+            const promptElement = document.getElementById('prompt');
+            const newText = document.createElement('span');
+            newText.className = highlightClass;
+            newText.textContent = text ? ` ${text}` : '';
+            promptElement.appendChild(newText);
+
+            // Disable the button after it is clicked
+            button.disabled = true;
+
+            // Increment clickedCount
+            clickedCount++;
+
+            // Check if all 5 buttons have been clicked
+            if (clickedCount === 5) {
+                showNextButton();
+            }
+        }
+
+        function showNextButton() {
+            const buttonContainer = document.getElementById('button-container');
+            buttonContainer.innerHTML = `
+                <button class="next-button" onclick="goToNextPage()">Next</button>
+            `;
+        }
+
+        function goToNextPage() {
+            window.location.href = 'Page10.html'; // Replace with the actual URL of the next page
+        }
+    </script>
+</body>
+</html>
+
